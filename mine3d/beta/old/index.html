@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+	<meta name="author" content="Eberhard Gräther">
+	<meta name="description" content="3D Minesweeper in WebGL">
+
+	<title>Mine3D</title>
+
+	<link href='http://fonts.googleapis.com/css?family=Questrial' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" media="all" href="styles/style.css"/>
+
+	<script type="text/javascript">
+
+	  var _gaq = _gaq || [];
+	  _gaq.push(['_setAccount', 'UA-18871992-2']);
+	  _gaq.push(['_trackPageview']);
+
+	  (function() {
+	    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+	    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	  })();
+
+	</script>
+</head>
+<body>
+
+	<div id="container"></div>
+
+	<div id="overlay"></div>
+
+	<div id="hud">
+
+		<div class="element button clear" id="menuButton"> menu </div>
+
+		<div class="element button" id="newButton"> new </div>
+
+		<div class="element clear" id="menu">
+
+			<div class="element button" id="aboutButton"> about </div>
+			<div class="element button" id="settingsButton"> settings </div>
+			<div class="element button" id="statsButton"> stats </div>
+			<div class="element button" id="instructionsButton"> instructions </div>
+			<div class="element button" id="controlsButton"> controls </div>
+
+		</div>
+
+		<div class="page element clear" id="about">
+
+			<div class="label">
+				<span class="heading highlight">Mine3D</span>
+				<span class="subtitle"> open beta </span> <br />
+				3D Minesweeper in WebGL
+			</div>
+
+			<div class="label">
+				taking up
+				<a href="http://weegen.home.xs4all.nl/Minesweeper3D/">Minesweeper 3D</a> <br />
+				by Eelis van der Weegen
+			</div>
+
+			<div class="label">
+				developed by <a href="http://egraether.com/">egraether</a><br />
+				with help from 
+				<a href="http://hempt.at/">mph</a>, 
+				<a href="http://www.findologic.com/">felix hummel</a>, <br />
+				<a href="http://stravid.com/">stravid</a>,
+				<a href="http://cwinkler.multimediatechnology.at/">cwinkler</a> 
+				and <a href="http://www.walmink.com/">wouter walmink</a>
+			</div>
+
+			<div class="label">
+				powered by 
+				<a href="http://code.google.com/p/glmatrix/">glMatrix.js</a>, 
+				<a href="https://github.com/sole/tween.js/">tween.js</a> <br />
+				and <a href="http://jquery.com/">jQuery</a>
+			</div>
+
+			<div class="label">
+				released under <a href="https://github.com/egraether/mine3D/blob/master/LICENSE.txt">MIT Licence</a>
+			</div>
+
+			<div class="label">
+				source available on <a href="https://github.com/egraether/mine3D">github</a>
+			</div>
+
+		</div>
+
+		<div class="page element clear" id="settings">
+
+			<div class="label heading"> Settings </div>
+
+			<div class="label left"> mode: </div>
+			<div class="element button" id="classic"> classic </div>
+			<div class="element button" id="sweep"> sweep </div>
+
+			<div class="label left"> level: </div>
+			<div class="element button" id="easy"> easy </div>
+			<div class="element button" id="medium"> medium </div>
+			<div class="element button" id="hard"> hard </div>
+
+			<div class="label left"> animations: </div>
+			<div class="element button" id="animationsOn"> On </div>
+			<div class="element button" id="animationsOff"> Off </div>
+
+			<div class="label left"> auto center: </div>
+			<div class="element button" id="recenterOn"> On </div>
+			<div class="element button" id="recenterOff"> Off </div>
+
+			<div class="element button clear right" id="apply"> apply </div>
+
+		</div>
+
+		<div class="page element clear" id="stats">
+
+			<div class="label heading"> Stats </div>
+
+			<table>
+				<tr>
+					<td style="color:#555"> times </td>
+					<td> classic </td>
+					<td> sweep </td>
+				</tr>
+				<tr>
+					<td> easy </td>
+					<td id="classiceasy"> - </td>
+					<td id="sweepeasy"> - </td>
+				</tr>
+				<tr>
+					<td> medium </td>
+					<td id="classicmedium"> - </td>
+					<td id="sweepmedium"> - </td>
+				</tr>
+				<tr>
+					<td> hard </td>
+					<td id="classichard"> - </td>
+					<td id="sweephard"> - </td>
+				</tr>
+			</table>
+
+			<div class="label"> games won: <span id="gamesWon"> 0 </span> </div>
+			<div class="label"> games played: <span id="gamesPlayed"> 0 </span> </div>
+			<div class="label"> time played: <span id="timePlayed"> 0 </span> </div>
+
+			<div class="element button clear" id="clearButton"> delete </div>
+			<div class="left" id="clearPrompt">
+				<div class="label left" style="clear:none"> sure? </div>
+				<div class="element button" id="clearNowButton"> yes </div>
+			</div>
+
+		</div>
+
+		<div class="page element clear" id="instructions">
+
+			<div class="label heading"> Instructions </div>
+
+			<ul>
+				<li> 
+					some <span class="highlight">cubes</span> are 
+					<span class="highlight">mines</span>
+				</li>
+				<li> 
+					opening a mine
+					means <span class="highlight">game over</span>
+				</li>
+				<li> 
+					open all <span class="highlight">empty</span> cubes
+					to <span class="highlight">win</span> the game 
+				</li>
+				<li> 
+					<span class="highlight">numbers</span> show 
+					how many mines are around 
+				</li>
+				<li> 
+					<span class="highlight">mark</span> cubes 
+					to tag them as mine
+				</li>
+			</ul>
+
+			<div class="label">sweep mode:</div>
+
+			<ul>
+				<li> 
+					<span class="highlight">delete</span> 
+					mines instead of marking </li>
+				<li> 
+					deleting an <span class="highlight">empty</span> cube 
+					means <span class="highlight">game over</span> 
+				</li>
+			</ul>
+
+		</div>
+
+		<div class="page element clear" id="controls">
+
+			<div class="label heading"> Controls </div>
+
+			<table class="clear">
+				<tr>
+					<td> mouse <br /> button </td>
+					<td> click </td>
+					<td> drag </td>
+				</tr>
+				<tr>
+					<td> left </td>
+					<td> open cube </td>
+					<td> rotate grid </td>
+				</tr>
+				<tr>
+					<td> right </td>
+					<td> mark cube / <br /> delete mine </td>
+					<td> move grid </td>
+				</tr>
+			</table>
+
+			<div class="label"> <span class="highlight">scroll</span> to zoom </div>
+
+			<table class="clear">
+				<tr>
+					<td> keyboard <br /> button </td>
+					<td> action </td>
+				</tr>
+				<tr>
+					<td> F/D & J/K </td>
+					<td> alternatives to <br /> mouse buttons </td>
+				</tr>
+				<tr>
+					<td> SPACE </td>
+					<td> start new game </td>
+				</tr>
+				<tr>
+					<td> ESC </td>
+					<td> open/close menu </td>
+				</tr>
+			</table>
+
+		</div>
+
+		<div class="element clear" id="winner"> you win! </div>
+
+		<div class="element clear" id="loser"> you lose! </div>
+
+		<div class="element button" id="restartButton"> restart </div>
+
+		<div class="element clear" id="error">
+			WebGL does not work in your browser. Find out why: 
+			<a href="http://get.webgl.org">http://get.webgl.org</a>
+		</div>
+
+		<div class="left clear" id="antiOverlap"></div>
+
+	</div>
+
+	<div id="welcomeWrapper">
+
+		<div class="element" id="welcome">
+
+			<div class="left" id="intro">
+
+				<div class="label">
+					<span class="title highlight"> Mine3D </span>
+					<span class="subtitle"> open beta </span>
+				</div>
+
+				<div class="label text">
+					Can you play Minesweeper in 3D? 
+					Same rules, one more dimension.
+					Click here to give it a try:
+				</div>
+
+				<div class="element button" id="playClassicButton"> play classic </div>
+
+				<div class="label text">
+					Or choose an entirely new experience. 
+					Delete mines instead of marking them
+					and reduce the field mine by mine:
+				</div>
+
+				<div class="element button" id="playSweepButton"> play sweep </div>
+
+			</div>
+
+			<div class="left" id="info">
+
+				<div class="label heading highlight"> Info </div>
+
+				<div class="label">
+					release contains most features, but no final graphic design and few animations
+				</div>
+
+				<div class="label">
+					renders only on interaction
+				</div>
+
+				<div class="label">
+					find rules and controls in the menu
+				</div>
+
+				<div class="label">
+					if rendering lags: <br />
+					- decrease size of window <br />
+					- turn off animations
+				</div>
+
+				<div class="label">
+					developed by <a href="http://egraether.com/">egraether</a>
+				</div>
+
+			</div>
+
+			<div class="clear"></div>
+
+		</div>
+
+	</div>
+
+	<div id="externals">
+
+		<div class="element button right" id="updateButton"> stay informed </div>
+
+		<div class="element button right" id="feedbackButton"> feedback </div>
+
+		<div class="element button right" id="shareButton"> share </div>
+
+		<div class="element clear right" id="share">
+
+			<div class="label">
+				copy and paste to your favorite <br />
+				social media:
+			</div>
+
+			<textarea>Mine3D - play 3D Minesweeper in WebGL: http://egraether.com/mine3d/</textarea>
+
+		</div>
+
+		<div class="element clear right" id="feedback">
+
+			<div class="label">
+				Please share your thoughts, ideas <br /> or troubles at
+				<a href="https://mine3d.uservoice.com">UserVoice</a> or 
+				<a href="http://www.reddit.com/r/gaming/comments/l2zbl/3d_minesweeper_in_webgl/">reddit</a>.
+			</div>
+
+		</div>
+
+		<div class="element clear right" id="update">
+
+			<div class="label">
+				News are posted via Twitter tagged <br />
+				<a href="http://twitter.com/#!/search/realtime/%23Mine3D">#Mine3D</a> 
+				or follow <a href="http://twitter.com/#!/egraether">@egraether</a>.
+			</div>
+
+		</div>
+
+	</div>
+
+	<div class="element" id="timeDisplay"> time: <span id="time"> 0 </span> </div>
+
+	<div class="element clear" id="mineDisplay"> mines: <span id="mines"> 10 </span> </div>
+
+<script id="vertex-shader" type="x-shader/x-vertex" charset="utf-8">
+
+	uniform mat4 uMVMatrix;
+	uniform mat4 uPMatrix;
+
+	attribute vec3 aPosition;
+	attribute vec4 aColor;
+	attribute vec2 aTextureCoord;
+
+	varying vec4 vColor;
+	varying vec2 vTextureCoord;
+
+	void main( void ) {
+
+		gl_Position = uPMatrix * uMVMatrix * vec4( aPosition, 1.0 );
+
+		vColor = aColor;
+		vTextureCoord = aTextureCoord;
+
+	}
+
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment" charset="utf-8">
+
+	#ifdef GL_ES
+		precision highp float;
+	#endif
+
+	uniform sampler2D uTexture;
+
+	varying vec4 vColor;
+	varying vec2 vTextureCoord;
+
+	void main(void) {
+
+		vec4 texColor = texture2D( uTexture, vTextureCoord );
+
+		gl_FragColor = mix( vColor, texColor, texColor.a );
+
+	}
+
+</script>
+
+<script type="text/javascript" charset="utf-8" src="src/mine3d.js"></script>
+
+</body>
+</html>

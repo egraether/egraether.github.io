@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=utf-8>
+    <title>Pie Chart Timer</title>
+    <meta name="description" content="25 min of work and a 5 min of pause">
+    <meta name="author" content="Eberhard Gräther">
+</head>
+<body>
+    <script type="text/javascript">
+
+/*
+ * Pomodoro Timer Example
+ * 25 min of work and a 5 min of pause
+ * 
+ * see example at: http://egraether.com/pieChartTimer.html
+ * warning: timer is not accurate
+ */
+
+function pomodoroTimer() {
+
+    var canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 501;
+
+    document.body.appendChild(canvas);
+    var context = canvas.getContext('2d');
+
+    var pieChartTimer = function(a,b,c,d,e,f){a.translate(b,b);(e=function(){a.fillRect(0,-b,1,b);a.rotate(Math.PI/c*50);f=-~f;f>c/25?!d||d():setTimeout(e,25)})()}
+
+    var work = function() {
+
+        if (confirm("start working?")) {
+
+            context.fillStyle = "#A00";
+            context.setTransform(1, 0, 0, 1, 0.5, 0.5);
+    
+            pieChartTimer(context, 250, 1500000, pause);
+
+        }
+
+    }
+
+    var pause = function() {
+
+        if (confirm("start pausing?")) {
+
+            context.fillStyle = "#0A0";
+            context.setTransform(1, 0, 0, 1, 0.5, 0.5);
+    
+            pieChartTimer(context, 250, 300000, work);
+    
+        }
+
+    }
+
+    pause();
+
+};
+        
+window.onload = function() {
+    
+    pomodoroTimer();
+    
+};
+    
+    </script>
+</body>
+</html>

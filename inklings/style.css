@@ -1,0 +1,29 @@
+#container {
+	width : 100%;
+	height : 100%;
+	overflow : hidden;
+	position : absolute;
+	top : 0px;
+	left : 0px;
+}
+
+body {
+	color: darkblue;
+}
+
+#hud {
+	position : absolute;
+	float : left;
+	top : 0;
+	left : 10px;
+}
+
+#hud p {
+	clear : both;
+	float : left;
+	margin : 10px;
+}
+
+#big {
+	font-size : 20pt;
+}

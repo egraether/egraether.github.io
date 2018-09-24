@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang=en>
+<head>
+    <meta name="author" content="Eberhard Gräther">
+    <title>egraether - soft body painter</title>
+    
+    <style type="text/css">
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        #canvas {
+            z-index: -1;
+            position: absolute;
+            top: 0px;
+            left: 0px;
+        }
+        p {
+            float : left;
+            font: 16px/24px Georgia, serif;
+            padding: 10px 30px;
+            background: #CCCCCC;
+        }
+        .button {
+            padding: 3px 7px;
+            border: 1px solid black;
+            background: #DDDDDD;
+            margin-right: 20px;
+        }
+        .active {
+            border-color: white;
+        }
+        #colors > span {
+            float: left;
+            display: block;
+            height: 16px;
+            width: 16px;
+            margin: 3px 5px;
+            border: 1px solid black;
+        }
+        .clear {
+            clear: both;
+        }
+    </style>
+    
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-18871992-2']);
+      _gaq.push(['_trackPageview']);
+      
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+</head>
+<body>
+    <p>
+        soft body painter by <a href="http://egraether.com">egraether</a> - drag to rotate / scroll to zoom / click to add cube - <a href="http://egraether.com/index.html#soft">more</a>
+    </p>
+    <div class="clear"></div>
+    <p>
+        <span class="button" id="go" onclick="go()" />start/stop</span>
+        <span class="button" id="wireframe" onclick="toggleWireframe()" />wireframe</span>
+        <span class="button" id="clear" onclick="reset()" />clear</span>
+    </p>
+    <p id="colors">
+    </p>
+    <!-- <p>
+        x: <input type="text" size="3" id="x" value="0" />
+        y: <input type="text" size="3" id="y" value="0" />
+        z: <input type="text" size="3" id="z" value="1" />
+        <input type="button" value="cube" onclick="createCube()" />
+    </p>
+    <p>
+        <textarea rows="5" cols="20" id="area">
+1 0 0
+0 1 0
+-1 1 0
+        </textarea><br />
+        <input type="button" value="cubes" onclick="createCubes()" />
+    </p> -->
+
+    <canvas id="canvas">
+        <p style="padding-top: 50px">
+            Your browser does not support &lt;canvas&gt; and WebGL<br/>
+            <a href="http://get.webgl.org">http://get.webgl.org</a>
+        </p>
+    </canvas>
+
+<script id="vertex-shader" type="x-shader/x-vertex" charset="utf-8">
+
+    uniform mat4 uMVMatrix;
+    uniform mat4 uPMatrix;
+
+    attribute vec3 aPosition;
+
+    void main( void ) {
+
+        gl_Position = uPMatrix * uMVMatrix * vec4( aPosition, 1.0 );
+
+    }
+
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment" charset="utf-8">
+
+    #ifdef GL_ES
+        precision highp float;
+    #endif
+
+    uniform vec3 uColor;
+
+    void main(void) {
+
+        gl_FragColor = vec4( uColor, 1.0 );
+
+    }
+
+</script>
+
+<script id="body-vertex-shader" type="x-shader/x-vertex" charset="utf-8">
+
+    uniform mat4 uMVMatrix;
+    uniform mat4 uPMatrix;
+    
+    uniform vec3 uLight;
+    
+    attribute vec3 aPosition;
+    attribute vec3 aNormal;
+    attribute vec3 aColor;
+    
+    varying vec4 vColor;
+    
+    void main( void ) {
+    
+        gl_Position = uPMatrix * uMVMatrix * vec4( aPosition, 1.0 );
+        
+        vColor = vec4( aColor * ( abs( dot( normalize( aNormal ), uLight ) * 0.5 ) + 0.5 ), 1.0);
+    
+    }
+    
+</script>
+
+<script id="body-fragment-shader" type="x-shader/x-fragment" charset="utf-8">
+    
+    #ifdef GL_ES
+        precision highp float;
+    #endif
+    
+    varying vec4 vColor;
+    
+    void main(void) {
+        
+        gl_FragColor = vColor;
+        
+    }
+    
+</script>
+
+<script type="text/javascript" charset="utf-8" src="../lib/requestAnimationFrame.js"></script>
+<script type="text/javascript" charset="utf-8" src="../lib/glMatrix.js"></script>
+
+<script type="text/javascript" charset="utf-8" src="src/vertex.js"></script>
+<script type="text/javascript" charset="utf-8" src="src/edge.js"></script>
+<script type="text/javascript" charset="utf-8" src="src/face.js"></script>
+<script type="text/javascript" charset="utf-8" src="src/cube.js"></script>
+<script type="text/javascript" charset="utf-8" src="src/body.js"></script>
+<script type="text/javascript" charset="utf-8" src="src/floor.js"></script>
+<script type="text/javascript" charset="utf-8" src="src/soft.js"></script>
+
+</body>
+</html>
